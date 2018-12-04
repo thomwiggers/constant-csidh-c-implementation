@@ -24,7 +24,7 @@ void fp_print(fp const *x) {
 
 int main() {
 
-	uint8_t num_intervals = 5;
+	uint8_t num_batches = 5;
 	uint8_t my = 11;
 	clock_t t0, t1;
 	
@@ -56,11 +56,11 @@ int main() {
 		csidh_private(&priv_bob, max);
 		
 
-		assert(csidh(&pub_alice, &base, &priv_alice, num_intervals, max, num_isogenies, my));
+		assert(csidh(&pub_alice, &base, &priv_alice, num_batches, max, num_isogenies, my));
 		printf("\n\n");
 
 		t0 = clock();
-		assert(csidh(&pub_alice, &base, &priv_alice, num_intervals, max, num_isogenies, my));
+		assert(csidh(&pub_alice, &base, &priv_alice, num_batches, max, num_isogenies, my));
 		t1 = clock();
 
 		printf("Alice's public key (including validation) (%7.3lf ms):\n  ", 1000. * (t1 - t0) / CLOCKS_PER_SEC);
@@ -69,7 +69,7 @@ int main() {
     		printf("\n\n");
 
 		t0 = clock();
-		assert(csidh(&pub_bob, &base, &priv_bob, num_intervals, max, num_isogenies, my));
+		assert(csidh(&pub_bob, &base, &priv_bob, num_batches, max, num_isogenies, my));
 		t1 = clock();
 		
 		printf("Bob's public key (including validation) (%7.3lf ms):\n  ", 1000. * (t1 - t0) / CLOCKS_PER_SEC);
@@ -79,7 +79,7 @@ int main() {
 
 
 		t0 = clock();
-		assert(csidh(&shared_alice, &pub_bob, &priv_alice, num_intervals, max, num_isogenies, my));
+		assert(csidh(&shared_alice, &pub_bob, &priv_alice, num_batches, max, num_isogenies, my));
 		t1 = clock();
 
 		printf("Alice's shared secret (including validation) (%7.3lf ms):\n  ", 1000. * (t1 - t0) / CLOCKS_PER_SEC);
@@ -88,7 +88,7 @@ int main() {
     		printf("\n\n");
 
 		t0 = clock();
-		assert(csidh(&shared_bob, &pub_alice, &priv_bob, num_intervals, max, num_isogenies, my));
+		assert(csidh(&shared_bob, &pub_alice, &priv_bob, num_batches, max, num_isogenies, my));
 		t1 = clock();
 
 		printf("Bob's shared secret (including validation) (%7.3lf ms):\n  ", 1000. * (t1 - t0) / CLOCKS_PER_SEC);

@@ -349,9 +349,9 @@ void xDUMISOG(proj *A, proj *P, proj const *K, uint64_t k)
 
 }
 
-/* dummy isogeny; computes  k[P] */
+/* last dummy isogeny; computes  k[P] */
 /* instead of computing an isogeny */
-/* (obviously) not constant time in k */
+/* skips point evaluation part*/
 void lastxDUMISOG(proj *A, proj *P, proj const *K, uint64_t k)
 {
     assert (k >= 3);

@@ -135,10 +135,10 @@ void elligator(fp * x, const fp *A, bool sign, uint8_t index) {
 
 /* totally not constant-time. */
 void action(public_key *out, public_key const *in, private_key const *priv,
-		uint8_t num_intervals, uint8_t const *max_exponent, unsigned int const num_isogenies, uint8_t const my) {
+		uint8_t num_batches, uint8_t const *max_exponent, unsigned int const num_isogenies, uint8_t const my) {
 
 	u512 k[5];
-	int8_t interval;
+	int8_t batch;
 	uint8_t count = 0;
 	uint8_t elligator_index = 0;
 	uint8_t last_iso[5];
@@ -146,13 +146,13 @@ void action(public_key *out, public_key const *in, private_key const *priv,
 	fp rhs;
 	proj P, K;
 	u512 cof;
-	bool done[num_intervals], finished[num_primes], single_array = false;
+	bool finished[num_primes], single_array = false;
 	unsigned int isog_counter = 0, repeat_counter = 0;
 
  
-	for (uint8_t i = 0; i < num_intervals; ++i) {
+	for (uint8_t i = 0; i < num_batches; ++i) {
 		u512_set(&k[i], 4); /* maximal 2-power in p+1 */
-		last_iso[i] = (num_primes - 1) - ((num_primes - 1 - i) % num_intervals);
+		last_iso[i] = (num_primes - 1) - ((num_primes - 1 - i) % num_batches);
 	}
 
 	uint8_t e[num_primes];
@@ -163,13 +163,13 @@ void action(public_key *out, public_key const *in, private_key const *priv,
 
 	for (uint8_t i = 0; i < num_primes; i++) {
 
-		interval = i % num_intervals;
+		batch = i % num_batches;
 		e[i] = priv->e[i];
 
 		dummy[i] = max_exponent[i] - priv->e[i];
 
-		for (uint8_t j = 0; j < num_intervals; j++) {
-			if (j != interval)
+		for (uint8_t j = 0; j < num_batches; j++) {
+			if (j != batch)
 				u512_mul3_64(&k[j], &k[j], primes[i]);
 		}
 
@@ -177,8 +177,6 @@ void action(public_key *out, public_key const *in, private_key const *priv,
 
 	proj A = { in->A, fp_1 };
 
-
-	memset(done, 0, sizeof(done));
 	memset(finished, 0, sizeof(finished));
 
 
@@ -186,20 +184,15 @@ void action(public_key *out, public_key const *in, private_key const *priv,
 	int m = 0;
 
 	do {
-		m = (m + 1) % num_intervals;
-		while (done[m] == true) {
-		//if(single_array!=true){
-			m = (m + 1) % num_intervals;
-		}
-		//}
-		//m = (m + 1) % num_intervals;
-		if((count == my*num_intervals) && (single_array!=true)) {
+		m = (m + 1) % num_batches;
+		
+		
+		if(count == my*num_batches) {
 			m = 0;
-			done[m] = false;
 			single_array = true;
-			last_iso[0] = 73;
+			last_iso[0] = 73;    //doesn't skip point evaluations anymore after merging batches; one could implement this easily, but doesn't save much time
 			u512_set(&k[m], 4);
-			num_intervals = 1;
+			num_batches = 1;
 			for (uint8_t i = 0; i < num_primes; i++) {
 				if ((e[i] == 0) && (dummy[i] == 0))  {
 					u512_mul3_64(&k[m], &k[m], primes[i]);
@@ -211,14 +204,13 @@ void action(public_key *out, public_key const *in, private_key const *priv,
 
 
 
-		// only "positive" values
 		if(memcmp(&A.x, &fp_0, sizeof(fp))) {
 			elligator(&P.x, &A.x, true, elligator_index);
 			elligator_index = (elligator_index + 1)%10;
 			P.z = fp_1;
 		} else {
 			sign = false;
-			while (!sign) {
+			while (!sign) {   //to do: hardcoded point of full order for a=0
 				fp_random(&P.x);
 				P.z = fp_1;
 				montgomery_rhs(&rhs, &A.x, &P.x);
@@ -231,15 +223,14 @@ void action(public_key *out, public_key const *in, private_key const *priv,
 
 		xMUL(&P, &A, &P, &k[m]);
 
-		done[m] = true;
 
 
-		for (uint8_t i = m; i < num_primes; i = i + num_intervals) {
+		for (uint8_t i = m; i < num_primes; i = i + num_batches) {
 			if(finished[i] == true) {
 				continue;
 			} else {
 				cof = u512_1;
-				for (uint8_t j = i + num_intervals; j < num_primes; j = j + num_intervals)
+				for (uint8_t j = i + num_batches; j < num_primes; j = j + num_batches)
 					if (finished[j] == false)
 						u512_mul3_64(&cof, &cof, primes[j]);
 
@@ -272,14 +263,14 @@ void action(public_key *out, public_key const *in, private_key const *priv,
 				}
 
 			}
-			if((e[i] != 0) || (dummy[i] != 0) ) {
-				done[m] = false;
-			} else {
+			if((e[i] == 0) && (dummy[i] == 0) ) {
+			
 				finished[i] = true;
 				u512_mul3_64(&k[m], &k[m], primes[i]);
-				while (finished[last_iso[m]]==true && last_iso[m]>=num_intervals && single_array == false){
-					last_iso[m] = last_iso[m] - num_intervals;
+				while (finished[last_iso[m]]==true && last_iso[m]>=num_batches && single_array == false){
+					last_iso[m] = last_iso[m] - num_batches;
 				}
+				
 			}
 
 
@@ -299,12 +290,12 @@ void action(public_key *out, public_key const *in, private_key const *priv,
 
 /* includes public-key validation. */
 bool csidh(public_key *out, public_key const *in, private_key const *priv,
-		uint8_t const num_intervals, uint8_t const *max_exponent, unsigned int const num_isogenies, uint8_t const my) {
+		uint8_t const num_batches, uint8_t const *max_exponent, unsigned int const num_isogenies, uint8_t const my) {
 	if (!validate(in)) {
 		fp_random(&out->A);
 		return false;
 	}
-	action(out, in, priv, num_intervals, max_exponent, num_isogenies, my);
+	action(out, in, priv, num_batches, max_exponent, num_isogenies, my);
 
 	return true;
 }
