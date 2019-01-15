@@ -23,15 +23,13 @@ unsigned long its = 10000;
 
 int main()
 {
-    clock_t t0, t1, time = 0;
-    uint64_t c0, c1, cycles = 0;
+    	clock_t t0, t1, time = 0;
+    	uint64_t c0, c1, cycles = 0;
 
 
 
 	uint8_t num_batches = 5;
 	uint8_t my = 11;
-//	clock_t t0, t1;
-	
 
 	uint8_t max[num_primes] = { 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
 	                7, 7, 7, 7, 7, 7, 8, 8, 8, 8, 8, 8, 8, 11, 11, 11, 11,11, 11,
@@ -39,7 +37,7 @@ int main()
 	                13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
 	                13, 13, 13, 13, 13, 13, 13, 13, 5, 7, 7, 7, 7 };
 
-unsigned int num_isogenies = 763;
+	unsigned int num_isogenies = 763;
 
 
 	// calculate inverses for "elligatoring"
@@ -52,29 +50,29 @@ unsigned int num_isogenies = 763;
 	}
 
 
-    private_key priv;
-    public_key pub = base;
+    	private_key priv;
+    	public_key pub = base;
 
-    for (unsigned long i = 0; i < its; ++i) {
+   	for (unsigned long i = 0; i < its; ++i) {
 
-        csidh_private(&priv, max);
+        	csidh_private(&priv, max);
 
-        t0 = clock();
-        c0 = rdtsc();
+        	t0 = clock();
+	        c0 = rdtsc();
 
-        /**************************************/
-        assert(validate(&pub));
-        action(&pub, &pub, &priv, num_batches, max, num_isogenies, my);
-        /**************************************/
+	        /**************************************/
+	        assert(validate(&pub));
+	        action(&pub, &pub, &priv, num_batches, max, num_isogenies, my);
+	        /**************************************/
 
-        c1 = rdtsc();
-        t1 = clock();
-        cycles += c1 - c0;
-        time += t1 - t0;
-    }
+	        c1 = rdtsc();
+	        t1 = clock();
+	        cycles += c1 - c0;
+	        time += t1 - t0;
+    	}
 
-    printf("iterations: %lu\n", its);
-    printf("clock cycles: %" PRIu64 "\n", (uint64_t) cycles / its);
-    printf("wall-clock time: %.3lf ms\n", 1000. * time / CLOCKS_PER_SEC / its);
+	    printf("iterations: %lu\n", its);
+	    printf("clock cycles: %" PRIu64 "\n", (uint64_t) cycles / its);
+	    printf("wall-clock time: %.3lf ms\n", 1000. * time / CLOCKS_PER_SEC / its);
 }
 
