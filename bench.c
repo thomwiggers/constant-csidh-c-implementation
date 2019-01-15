@@ -26,19 +26,45 @@ int main()
     clock_t t0, t1, time = 0;
     uint64_t c0, c1, cycles = 0;
 
+
+
+	uint8_t num_batches = 5;
+	uint8_t my = 11;
+//	clock_t t0, t1;
+	
+
+	uint8_t max[num_primes] = { 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
+	                7, 7, 7, 7, 7, 7, 8, 8, 8, 8, 8, 8, 8, 11, 11, 11, 11,11, 11,
+	                11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 13, 13, 13, 13,
+	                13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+	                13, 13, 13, 13, 13, 13, 13, 13, 5, 7, 7, 7, 7 };
+
+unsigned int num_isogenies = 763;
+
+
+	// calculate inverses for "elligatoring"
+	// create inverse of u^2 - 1 : from 2 - 11
+	for (int i = 2; i <= 11; i++) {
+		fp_set(&invs_[i - 2], i);
+		fp_sq1(&invs_[i - 2]);
+		fp_sub2(&invs_[i - 2], &fp_1);
+		fp_inv(&invs_[i - 2]);
+	}
+
+
     private_key priv;
     public_key pub = base;
 
     for (unsigned long i = 0; i < its; ++i) {
 
-        csidh_private(&priv);
+        csidh_private(&priv, max);
 
         t0 = clock();
         c0 = rdtsc();
 
         /**************************************/
         assert(validate(&pub));
-        action(&pub, &pub, &priv);
+        action(&pub, &pub, &priv, num_batches, max, num_isogenies, my);
         /**************************************/
 
         c1 = rdtsc();

@@ -27,6 +27,6 @@ void action(public_key *out, public_key const *in, private_key const *priv,
 bool csidh(public_key *out, public_key const *in, private_key const *priv,
 		uint8_t const num_intervals, uint8_t const *max_exponent, unsigned int const num_isogenies, uint8_t const my);
 void elligator(fp * x, const fp *A, bool sign, uint8_t index);
-
+bool validate(public_key const *in);
 
 #endif
