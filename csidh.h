@@ -10,6 +10,8 @@
 //#define max_exponent 10 /* (2*5+1)^74 is roughly 2^256 */
 fp invs_[10];
 
+void csidh_init();
+
 typedef struct private_key {
     //int8_t e[(num_primes + 1) / 2]; /* packed int4_t */
     int8_t e[num_primes]; /* packed int4_t */

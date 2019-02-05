@@ -1,0 +1,7 @@
+*.o
+*.so
+*.a
+
+bench
+test
+main

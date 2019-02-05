@@ -1,4 +1,13 @@
+# faster, constant-time CSIDH
+
+Packages the Campos, Meyer, Reith implementation with a slightly nicer API.
+
+Notably can package as a static library.
+
+## Based on:
 implementation accompanying the paper "On Lions and Elligators: An efficient constant-time implementation of CSIDH"
+
+https://zenon.cs.hs-rm.de/pqcrypto/constant-csidh-c-implementation
 
 based on the implementation accompanying the original CSIDH paper by Castryck, Lange, Martindale, Panny, Renes:
 https://eprint.iacr.org/2018/383

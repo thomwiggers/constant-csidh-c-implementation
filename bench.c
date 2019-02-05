@@ -19,60 +19,64 @@ static __inline__ uint64_t rdtsc(void)
     return lo | (uint64_t) hi << 32;
 }
 
-unsigned long its = 10000;
+unsigned long its = 1000;
 
 int main()
 {
-    	clock_t t0, t1, time = 0;
-    	uint64_t c0, c1, cycles = 0;
+    clock_t t0, t1, time = 0;
+    uint64_t c0, c1, cycles = 0;
 
 
 
-	uint8_t num_batches = 5;
-	uint8_t my = 11;
+    uint8_t num_batches = 5;
+    uint8_t my = 11;
 
-	uint8_t max[num_primes] = { 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
-	                7, 7, 7, 7, 7, 7, 8, 8, 8, 8, 8, 8, 8, 11, 11, 11, 11,11, 11,
-	                11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 13, 13, 13, 13,
-	                13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
-	                13, 13, 13, 13, 13, 13, 13, 13, 5, 7, 7, 7, 7 };
+    uint8_t max[num_primes] = { 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
+        7, 7, 7, 7, 7, 7, 8, 8, 8, 8, 8, 8, 8, 11, 11, 11, 11,11, 11,
+        11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 13, 13, 13, 13,
+        13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+        13, 13, 13, 13, 13, 13, 13, 13, 5, 7, 7, 7, 7 };
 
-	unsigned int num_isogenies = 763;
-
-
-	// calculate inverses for "elligatoring"
-	// create inverse of u^2 - 1 : from 2 - 11
-	for (int i = 2; i <= 11; i++) {
-		fp_set(&invs_[i - 2], i);
-		fp_sq1(&invs_[i - 2]);
-		fp_sub2(&invs_[i - 2], &fp_1);
-		fp_inv(&invs_[i - 2]);
-	}
+    unsigned int num_isogenies = 763;
 
 
-    	private_key priv;
-    	public_key pub = base;
+    // calculate inverses for "elligatoring"
+    // create inverse of u^2 - 1 : from 2 - 11
+    for (int i = 2; i <= 11; i++) {
+        fp_set(&invs_[i - 2], i);
+        fp_sq1(&invs_[i - 2]);
+        fp_sub2(&invs_[i - 2], &fp_1);
+        fp_inv(&invs_[i - 2]);
+    }
 
-   	for (unsigned long i = 0; i < its; ++i) {
 
-        	csidh_private(&priv, max);
+    private_key priv;
+    public_key pub = base;
 
-        	t0 = clock();
-	        c0 = rdtsc();
+    for (unsigned long i = 0; i < its; ++i) {
 
-	        /**************************************/
-	        assert(validate(&pub));
-	        action(&pub, &pub, &priv, num_batches, max, num_isogenies, my);
-	        /**************************************/
+        csidh_private(&priv, max);
 
-	        c1 = rdtsc();
-	        t1 = clock();
-	        cycles += c1 - c0;
-	        time += t1 - t0;
-    	}
+        t0 = clock();
+        c0 = rdtsc();
 
-	    printf("iterations: %lu\n", its);
-	    printf("clock cycles: %" PRIu64 "\n", (uint64_t) cycles / its);
-	    printf("wall-clock time: %.3lf ms\n", 1000. * time / CLOCKS_PER_SEC / its);
+        /**************************************/
+        assert(validate(&pub));
+        action(&pub, &pub, &priv, num_batches, max, num_isogenies, my);
+        /**************************************/
+
+        c1 = rdtsc();
+        t1 = clock();
+        cycles += c1 - c0;
+        time += t1 - t0;
+        if (i % 100 == 0) {
+            printf("Iteration: %lu\n", i);
+        }
+    }
+
+    printf("iterations: %lu\n", its);
+    printf("clock cycles: %" PRIu64 "\n", (uint64_t) cycles / its);
+    printf("wall-clock time: %.3lf ms\n", 1000. * time / CLOCKS_PER_SEC / its);
+    return 0;
 }
 

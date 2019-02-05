@@ -1,4 +1,8 @@
-all:
+CFLAGS=-Wall -Wextra -O3 -fPIC
+
+default: test
+
+main: main.c csidh.h csidh.c mont.c mont.h fp.S u512.S rng.c rng.h
 	@gcc \
 		-Wall -Wextra \
 		-O0 -funroll-loops \
@@ -24,3 +28,9 @@ debug:
 clean:
 	rm -f main
 
+libcsidh.a: libcsidh.o csidh.o mont.o fp.o u512.o rng.o
+	ar rcs $@ $^
+
+test: test.c libcsidh.a
+	$(CC) $(CFLAGS) -o $@ $^
+	./test

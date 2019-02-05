@@ -17,6 +17,8 @@ const u512 four_sqrt_p = { { 0x85e2579c786882cf, 0x4e3433657e18da95,
 
 const public_key base = { 0 }; /* A = 0 */
 
+
+
 void csidh_private(private_key *priv, const uint8_t *max_exponent) {
 	memset(&priv->e, 0, sizeof(priv->e));
 	for (size_t i = 0; i < num_primes;) {
@@ -300,4 +302,15 @@ bool csidh(public_key *out, public_key const *in, private_key const *priv,
 	return true;
 }
 
-
+void csidh_init() {
+    static bool initialised = false;
+    // calculate inverses for "elligatoring"
+    // create inverse of u^2 - 1 : from 2 - 11
+    for (int i = 2; !initialised && i <= 11; i++) {
+        fp_set(&invs_[i - 2], i);
+        fp_sq1(&invs_[i - 2]);
+        fp_sub2(&invs_[i - 2], &fp_1);
+        fp_inv(&invs_[i - 2]);
+    }
+    initialised = true;
+}
