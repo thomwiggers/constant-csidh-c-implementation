@@ -19,7 +19,7 @@ static __inline__ uint64_t rdtsc(void)
     return lo | (uint64_t) hi << 32;
 }
 
-unsigned long its = 10000;
+unsigned long its = 100;
 
 int main()
 {
@@ -31,7 +31,7 @@ int main()
 	uint8_t num_batches = 5;
 	uint8_t my = 11;
 
-	uint8_t max[num_primes] = { 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
+	int8_t max[num_primes] = { 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
 	                7, 7, 7, 7, 7, 7, 8, 8, 8, 8, 8, 8, 8, 11, 11, 11, 11,11, 11,
 	                11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 13, 13, 13, 13,
 	                13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,

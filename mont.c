@@ -134,7 +134,7 @@ void exp_by_squaring_(fp* x, fp* y, uint64_t exp)
 /* computes the isogeny with kernel point K of order k */
 /* returns the new curve coefficient A and the image of P */
 /* (obviously) not constant time in k */
-void xISOG(proj *A, proj *P, proj const *K, uint64_t k)
+void xISOG(proj *A, proj *P, proj *K, uint64_t k)
 {
     assert (k >= 3);
     assert (k % 2 == 1);
@@ -209,17 +209,19 @@ void xISOG(proj *A, proj *P, proj const *K, uint64_t k)
     fp_sub3(&A->z, &Aed.x, &Aed.z);
     fp_add2(&A->x, &A->x);
 
+
 }
 
 /* computes the isogeny with kernel point K of order k */
 /* returns the new curve coefficient A, no point evaluation */
-void lastxISOG(proj *A, proj *P, proj const *K, uint64_t k)
+void lastxISOG(proj *A, proj *P, proj const *K, uint64_t k, int mask)
 {
     assert (k >= 3);
     assert (k % 2 == 1);
 
     fp tmp0, tmp1, Psum, Pdif;
     proj Aed, prod;
+    proj Acopy = *A;
 
     fp_add3(&Aed.z, &A->z, &A->z);  //compute twisted Edwards curve coefficients
     fp_add3(&Aed.x, &A->x, &Aed.z);
@@ -266,146 +268,10 @@ void lastxISOG(proj *A, proj *P, proj const *K, uint64_t k)
     fp_sub3(&A->z, &Aed.x, &Aed.z);
     fp_add2(&A->x, &A->x);
 
-}
-
-
-/* dummy isogeny; computes  k[P] */
-/* instead of computing an isogeny */
-/* (obviously) not constant time in k */
-void xDUMISOG(proj *A, proj *P, proj const *K, uint64_t k)
-{
-    assert (k >= 3);
-    assert (k % 2 == 1);
-
-    fp tmp0, tmp1, tmp2, Psum, Pdif;
-    proj Q, Aed, prod;
-
-    fp_add3(&Aed.z, &A->z, &A->z);  //compute twisted Edwards curve coefficients
-    fp_add3(&Aed.x, &A->x, &Aed.z);
-    fp_sub3(&Aed.z, &A->x, &Aed.z);
-
-    fp_add3(&Psum, &P->x, &P->z);   //precomputations
-    fp_sub3(&Pdif, &P->x, &P->z);
-
-    fp_sub3(&prod.x, &K->x, &K->z);
-    fp_add3(&prod.z, &K->x, &K->z);
-
-    fp_mul3(&tmp1, &prod.x, &Psum);
-    fp_mul3(&tmp0, &prod.z, &Pdif);
-    fp_add3(&Q.x, &tmp0, &tmp1);
-    fp_sub3(&Q.z, &tmp0, &tmp1);
-
-    proj M[3] = {*P};
-    xDBL(&M[1], A, P);
-
-    for (uint64_t i = 1; i < k / 2; ++i) {
-
-        if (i >= 2)
-            xADD(&M[i % 3], &M[(i - 1) % 3], P, &M[(i - 2) % 3]);
-
-	fp_sub3(&tmp1, &M[i % 3].x, &M[i % 3].z);
-    fp_add3(&tmp0, &M[i % 3].x, &M[i % 3].z);
-	fp_mul2(&prod.x, &tmp1);
-    fp_mul2(&prod.z, &tmp0);
-    fp_mul2(&tmp1, &Psum);
-    fp_mul2(&tmp0, &Pdif);
-    fp_add3(&tmp2, &tmp0, &tmp1);
-	fp_mul2(&Q.x, &tmp2);
-    fp_sub3(&tmp2, &tmp0, &tmp1);
-	fp_mul2(&Q.z, &tmp2);
-
-    }
-
-    if (k>3)
-	xADD(&M[((k-1) / 2) % 3], &M[(((k-1) / 2)-1) % 3], P, &M[(((k-1) / 2)-2) % 3]);
-    const proj Pcopy = *P;
-    xADD(P, &M[((k-1) / 2) % 3],  &M[(((k-1) / 2)-1) % 3], &Pcopy);
-
-    // point evaluation
-    fp_sq1(&Q.x);
-    fp_sq1(&Q.z);
-    fp_mul2(&tmp1, &Q.x);
-    fp_mul2(&tmp0, &Q.z);
-
-    //compute Aed.x^k, Aed.z^k
-    exp_by_squaring_(&Aed.x, &Aed.z, k);
-
-    //compute prod.x^8, prod.z^8
-    fp_sq1(&prod.x);
-    fp_sq1(&prod.x);
-    fp_sq1(&prod.x);
-    fp_sq1(&prod.z);
-    fp_sq1(&prod.z);
-    fp_sq1(&prod.z);
-
-    //compute image curve parameters
-    fp_mul2(&Aed.z, &prod.x);
-    fp_mul2(&Aed.x, &prod.z);
-
-    //compute Montgomery params
-    fp_add3(&Aed.x, &Aed.x, &Aed.z);
-    fp_sub3(&Aed.z, &Aed.x, &Aed.z);
-    fp_add2(&Aed.x, &A->x);
+    // CONSTANT TIME : swap back
+    fp_cswap(&A->x, &Acopy.x, mask);
+    fp_cswap(&A->z, &Acopy.z, mask);
 
 }
 
-/* last dummy isogeny; computes  k[P] */
-/* instead of computing an isogeny */
-/* skips point evaluation part*/
-void lastxDUMISOG(proj *A, proj *P, proj const *K, uint64_t k)
-{
-    assert (k >= 3);
-    assert (k % 2 == 1);
 
-    fp tmp0, tmp1, Psum, Pdif;
-    proj Aed, prod;
-
-    fp_add3(&Aed.z, &A->z, &A->z);  //compute twisted Edwards curve coefficients
-    fp_add3(&Aed.x, &A->x, &Aed.z);
-    fp_sub3(&Aed.z, &A->x, &Aed.z);
-
-    fp_add3(&Psum, &P->x, &P->z);   //precomputations
-    fp_sub3(&Pdif, &P->x, &P->z);
-
-    fp_sub3(&prod.x, &K->x, &K->z);
-    fp_add3(&prod.z, &K->x, &K->z);
-
-
-    proj M[3] = {*P};
-    xDBL(&M[1], A, P);
-
-    for (uint64_t i = 1; i < k / 2; ++i) {
-
-        if (i >= 2)
-            xADD(&M[i % 3], &M[(i - 1) % 3], P, &M[(i - 2) % 3]);
-
-	fp_sub3(&tmp1, &M[i % 3].x, &M[i % 3].z);
-    fp_add3(&tmp0, &M[i % 3].x, &M[i % 3].z);
-	fp_mul2(&prod.x, &tmp1);
-    fp_mul2(&prod.z, &tmp0);
-
-
-    }
-
-
-    //compute Aed.x^k, Aed.z^k
-    exp_by_squaring_(&Aed.x, &Aed.z, k);
-
-    //compute prod.x^8, prod.z^8
-    fp_sq1(&prod.x);
-    fp_sq1(&prod.x);
-    fp_sq1(&prod.x);
-    fp_sq1(&prod.z);
-    fp_sq1(&prod.z);
-    fp_sq1(&prod.z);
-
-    //compute image curve parameters
-    fp_mul2(&Aed.z, &prod.x);
-    fp_mul2(&Aed.x, &prod.z);
-
-    //compute Montgomery params
-    fp_add3(&Aed.x, &Aed.x, &Aed.z);
-    fp_sub3(&Aed.z, &Aed.x, &Aed.z);
-    fp_add2(&Aed.x, &A->x);
-
-}
