@@ -1,27 +1,24 @@
 all:
 	@gcc \
 		-Wall -Wextra \
-		-O0 -funroll-loops \
+		-O3 -funroll-loops \
 		-g \
 		rng.c \
 		u512.S fp.S \
 		mont.c \
 		csidh.c \
-		seasign.c \
 		main.c \
-		-o main \
-		-lcrypto
+		-o main
 
 bench:
 	@gcc \
 		-Wall -Wextra \
-		-O0 -funroll-loops \
+		-O3 -funroll-loops \
 		-g -pg \
 		rng.c \
 		u512.S fp.S \
 		mont.c \
 		csidh.c \
-		seasign.c \
 		bench.c \
 		-o main
 
@@ -34,7 +31,6 @@ debug:
 		u512.S fp.S \
 		mont.c \
 		csidh.c \
-		seasign.c \		
 		main.c \
 		-o main
 

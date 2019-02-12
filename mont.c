@@ -68,6 +68,7 @@ void xADD(proj *S, proj const *P, proj const *Q, proj const *PQ)
 /* Montgomery ladder. */
 /* P must not be the unique point of order 2. */
 /* not constant-time! */
+/* factors are independent from the secret -> no constant-time ladder */
 void xMUL(proj *Q, proj const *A, proj const *P, u512 const *k)
 {
     proj R = *P;
@@ -125,22 +126,21 @@ void exp_by_squaring_(fp* x, fp* y, uint64_t exp)
     fp_set(y, 0);
     fp_add2(y, &result2);
 
-    //fp_cswap(&result1, x, 1);
-    //fp_cswap(&result2, y, 1);
 
 }
 
 
-/* computes the isogeny with kernel point K of order k */
-/* returns the new curve coefficient A and the image of P */
-/* (obviously) not constant time in k */
-void xISOG(proj *A, proj *P, proj *K, uint64_t k)
+/* computes the isogeny or dummy isogeny with kernel point K of order k */
+/* returns the new curve coefficient A and the image of P for real isogenies*/
+/* returns the old curve coefficient A and [k]P for dummy isogenies */
+void xISOG(proj *A, proj *P, proj *K, uint64_t k, int mask)
 {
     assert (k >= 3);
     assert (k % 2 == 1);
 
     fp tmp0, tmp1, tmp2, Psum, Pdif;
     proj Q, Aed, prod;
+    proj Acopy = *A;
 
     fp_add3(&Aed.z, &A->z, &A->z);  //compute twisted Edwards curve coefficients
     fp_add3(&Aed.x, &A->x, &Aed.z);
@@ -157,37 +157,47 @@ void xISOG(proj *A, proj *P, proj *K, uint64_t k)
     fp_add3(&Q.x, &tmp0, &tmp1);
     fp_sub3(&Q.z, &tmp0, &tmp1);
 
-    proj M[3] = {*K};
-    xDBL(&M[1], A, K);
+    // CONSTANT TIME :
+    proj *R = K;
+    proj *S = P;
+
+    // CONSTANT TIME :
+    fp_cswap(&R->x, &S->x, mask);
+    fp_cswap(&R->z, &S->z, mask);
+
+    proj M[3] = {*R};  //K for real iso, P for dum iso
+    xDBL(&M[1], A, R);
 
     for (uint64_t i = 1; i < k / 2; ++i) {
 
         if (i >= 2)
-            xADD(&M[i % 3], &M[(i - 1) % 3], K, &M[(i - 2) % 3]);
+            xADD(&M[i % 3], &M[(i - 1) % 3], R, &M[(i - 2) % 3]);
 
 	fp_sub3(&tmp1, &M[i % 3].x, &M[i % 3].z);
-    	fp_add3(&tmp0, &M[i % 3].x, &M[i % 3].z);
+	fp_add3(&tmp0, &M[i % 3].x, &M[i % 3].z);
 	fp_mul2(&prod.x, &tmp1);
-        fp_mul2(&prod.z, &tmp0);
-    	fp_mul2(&tmp1, &Psum);
-    	fp_mul2(&tmp0, &Pdif);
-    	fp_add3(&tmp2, &tmp0, &tmp1);
+	fp_mul2(&prod.z, &tmp0);
+	fp_mul2(&tmp1, &Psum);
+	fp_mul2(&tmp0, &Pdif);
+	fp_add3(&tmp2, &tmp0, &tmp1);
 	fp_mul2(&Q.x, &tmp2);
-    	fp_sub3(&tmp2, &tmp0, &tmp1);
+	fp_sub3(&tmp2, &tmp0, &tmp1);
 	fp_mul2(&Q.z, &tmp2);
 
     }
 
     if (k>3)
-	xADD(&M[((k-1) / 2) % 3], &M[(((k-1) / 2)-1) % 3], P, &M[(((k-1) / 2)-2) % 3]);
-    const proj Pcopy = *P;
-    xADD(&M[((k-1) / 2) % 3], &M[((k-1) / 2) % 3],  &M[(((k-1) / 2)-1) % 3], &Pcopy);
+	xADD(&M[((k-1) / 2) % 3], &M[(((k-1) / 2)-1) % 3], R, &M[(((k-1) / 2)-2) % 3]);
+    proj Pdummy = *R, Pcopy = *R;
+
+    xADD(&Pdummy, &M[((k-1) / 2) % 3],  &M[(((k-1) / 2)-1) % 3], &Pcopy);
 
     // point evaluation
     fp_sq1(&Q.x);
     fp_sq1(&Q.z);
     fp_mul2(&P->x, &Q.x);
     fp_mul2(&P->z, &Q.z);
+
 
     //compute Aed.x^k, Aed.z^k
     exp_by_squaring_(&Aed.x, &Aed.z, k);
@@ -209,11 +219,19 @@ void xISOG(proj *A, proj *P, proj *K, uint64_t k)
     fp_sub3(&A->z, &Aed.x, &Aed.z);
     fp_add2(&A->x, &A->x);
 
+    // CONSTANT TIME : swap back
+    fp_cswap(&A->x, &Acopy.x, mask);
+    fp_cswap(&A->z, &Acopy.z, mask);
+
+    // CONSTANT TIME :
+    fp_cswap(&P->x, &Pdummy.x, mask);
+    fp_cswap(&P->z, &Pdummy.z, mask);
 
 }
 
-/* computes the isogeny with kernel point K of order k */
-/* returns the new curve coefficient A, no point evaluation */
+/* computes the last real/dummy isogeny per batch with kernel point K of order k */
+/* real isogeny: returns the new curve coefficient A, no point evaluation */
+/* dummy isogeny: returns the old curve coefficient A, no point evaluation */
 void lastxISOG(proj *A, proj *P, proj const *K, uint64_t k, int mask)
 {
     assert (k >= 3);
