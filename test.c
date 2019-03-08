@@ -9,6 +9,9 @@ int main() {
     csidh_public_key alice_pub, bob_pub;
     csidh_public_key alice_shared, bob_shared;
 
+    for (size_t i = 0; i < sizeof(csidh_public_key); i++)
+        ((unsigned char*)&alice_shared)[i] = 0xff;
+
     csidh_generate(&alice_priv);
     csidh_generate(&bob_priv);
 

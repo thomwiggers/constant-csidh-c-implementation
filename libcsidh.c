@@ -25,10 +25,14 @@ int csidh_generate(csidh_private_key *key) {
     return 0;
 }
 
-int csidh_derive(csidh_public_key *parameter, const csidh_public_key *base, csidh_private_key *key) {
+int csidh_derive(csidh_public_key *parameter, csidh_public_key const *base, csidh_private_key const *key) {
     csidh_init();
     return !csidh((public_key*)parameter, (public_key*)base, (private_key*)key, NUM_BATCHES, MAX, NUM_ISOGENIES, MY);
 }
 
-
-const csidh_public_key csidh_base = { 0 };
+const csidh_public_key csidh_base = {{
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 16
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 32
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 48
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 64
+}};

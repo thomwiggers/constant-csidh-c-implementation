@@ -21,8 +21,6 @@ typedef struct public_key {
     fp A; /* Montgomery coefficient: represents y^2 = x^3 + Ax^2 + x */
 } public_key;
 
-extern const public_key base;
-
 void csidh_private(private_key *priv, const uint8_t *max_exponent);
 void action(public_key *out, public_key const *in, private_key const *priv,
 		uint8_t num_intervals, uint8_t const *max_exponent, unsigned int const num_isogenies, uint8_t const my);

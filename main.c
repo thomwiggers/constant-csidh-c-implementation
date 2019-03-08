@@ -36,6 +36,10 @@ int main() {
         13, 13, 13, 13, 13, 13, 13, 13, 5, 7, 7, 7, 7 };
 
 
+    printf("sizeof(csidh_public_key) = %zu\n", sizeof(public_key));
+    printf("sizeof(csidh_private_key) = %zu\n", sizeof(private_key));
+
+
     private_key priv_alice, priv_bob;
     public_key pub_alice, pub_bob;
     public_key shared_alice, shared_bob;

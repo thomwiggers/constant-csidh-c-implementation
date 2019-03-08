@@ -9,12 +9,11 @@ typedef struct {
     int8_t e[num_primes]; /* packed int4_t */
 } csidh_private_key;
 typedef struct {
-    uint64_t c[8];
+    uint8_t c[64];
 } csidh_public_key;
 
-int csidh_derive(csidh_public_key *parameter, const csidh_public_key *base, csidh_private_key *key);
+int csidh_derive(csidh_public_key *parameter, csidh_public_key const *base, csidh_private_key const *key);
 int csidh_generate(csidh_private_key *key);
 
 extern const csidh_public_key csidh_base;
-
 #endif
