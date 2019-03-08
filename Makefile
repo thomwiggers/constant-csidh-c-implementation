@@ -29,7 +29,7 @@ clean:
 	rm -f main
 
 libcsidh.a: libcsidh.h libcsidh.o csidh.o mont.o fp.o u512.o rng.o
-	chmod u+w $@
+	-chmod u+w $@
 	ar rcs $@ $^
 	chmod u-w $@
 
