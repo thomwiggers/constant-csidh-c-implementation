@@ -237,7 +237,7 @@ void lastxISOG(proj *A, proj *P, proj const *K, uint64_t k, int mask)
     assert (k >= 3);
     assert (k % 2 == 1);
 
-    fp tmp0, tmp1, Psum, Pdif;
+    fp tmp0, tmp1;
     proj Aed, prod;
     proj Acopy = *A;
 
@@ -245,9 +245,6 @@ void lastxISOG(proj *A, proj *P, proj const *K, uint64_t k, int mask)
     fp_add3(&Aed.x, &A->x, &Aed.z);
     fp_sub3(&Aed.z, &A->x, &Aed.z);
    
-    fp_add3(&Psum, &P->x, &P->z);   //precomputations
-    fp_sub3(&Pdif, &P->x, &P->z);
-
     fp_sub3(&prod.x, &K->x, &K->z);
     fp_add3(&prod.z, &K->x, &K->z);
 
