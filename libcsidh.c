@@ -29,9 +29,4 @@ int csidh_derive(csidh_public_key *parameter, csidh_public_key const *base,
                 NUM_BATCHES, MAX, NUM_ISOGENIES, MY);
 }
 
-const csidh_public_key csidh_base = {{
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 16
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 32
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 48
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 64
-}};
+const csidh_public_key csidh_base = {0};
