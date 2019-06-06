@@ -7,7 +7,7 @@
    as an integer should never make sense.
    enable compiler warnings when mixing up u512 and fp. */
 typedef struct fp {
-    u512 x;
+  u512 x;
 } fp;
 
 extern const fp fp_0;

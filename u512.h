@@ -5,7 +5,7 @@
 #include <stdint.h>
 
 typedef struct u512 {
-    uint64_t c[8];
+  uint64_t c[8];
 } u512;
 
 extern const u512 u512_1;

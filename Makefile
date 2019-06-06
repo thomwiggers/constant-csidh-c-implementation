@@ -5,7 +5,7 @@ default: test
 main: main.c csidh.h csidh.c mont.c mont.h fp.S u512.S rng.c rng.h
 	@gcc $(CFLAGS) \
 		-Wall -Wextra \
-		-O0 -funroll-loops \
+		-O3 -funroll-loops \
 		-g \
 		rng.c \
 		u512.S fp.S \
@@ -13,6 +13,19 @@ main: main.c csidh.h csidh.c mont.c mont.h fp.S u512.S rng.c rng.h
 		csidh.c \
 		main.c \
 		-o main
+
+bench:
+	@gcc \
+		-Wall -Wextra \
+		-O3 -funroll-loops \
+		-g -pg \
+		rng.c \
+		u512.S fp.S \
+		mont.c \
+		csidh.c \
+		bench.c \
+		-o main
+
 
 debug:
 	gcc \
