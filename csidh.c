@@ -4,14 +4,19 @@
 #include "csidh.h"
 #include "rng.h"
 
-const unsigned primes[num_primes] = {
+static uint32_t lookup(size_t pos, int8_t const *priv);
+static uint32_t isequal(uint32_t a, uint32_t b);
+static void cmov(int8_t *r, const int8_t *a, uint32_t b);
+static bool validate(public_key const *in);
+
+static const unsigned primes[num_primes] = {
     349, 347, 337, 331, 317, 313, 311, 307, 293, 283, 281, 277, 271, 269, 263,
     257, 251, 241, 239, 233, 229, 227, 223, 211, 199, 197, 193, 191, 181, 179,
     173, 167, 163, 157, 151, 149, 139, 137, 131, 127, 113, 109, 107, 103, 101,
     97,  89,  83,  79,  73,  71,  67,  61,  59,  53,  47,  43,  41,  37,  31,
     29,  23,  19,  17,  13,  11,  7,   5,   3,   587, 373, 367, 359, 353};
 
-const u512 four_sqrt_p = {{
+static const u512 four_sqrt_p = {{
     0x85e2579c786882cf,
     0x4e3433657e18da95,
     0x850ae5507965a0b3,
@@ -21,7 +26,7 @@ const u512 four_sqrt_p = {{
 const public_key base = {0}; /* A = 0 */
 
 /* get priv[pos] in constant time  */
-uint32_t lookup(size_t pos, int8_t const *priv) {
+static uint32_t lookup(size_t pos, int8_t const *priv) {
   int b;
   int8_t r = priv[0];
   for (size_t i = 1; i < num_primes; i++) {
@@ -35,7 +40,7 @@ uint32_t lookup(size_t pos, int8_t const *priv) {
 }
 
 /* check if a and b are equal in constant time  */
-uint32_t isequal(uint32_t a, uint32_t b) {
+static uint32_t isequal(uint32_t a, uint32_t b) {
   // size_t i;
   uint32_t r = 0;
   unsigned char *ta = (unsigned char *)&a;
@@ -47,7 +52,7 @@ uint32_t isequal(uint32_t a, uint32_t b) {
 }
 
 /* decision bit b has to be either 0 or 1 */
-void cmov(int8_t *r, const int8_t *a, uint32_t b) {
+static void cmov(int8_t *r, const int8_t *a, uint32_t b) {
   uint32_t t;
   b = -b; /* Now b is either 0 or 0xffffffff */
   t = (*r ^ *a) & b;
@@ -95,7 +100,7 @@ static void cofactor_multiples(proj *P, const proj *A, size_t lower,
 }
 
 /* never accepts invalid keys. */
-bool validate(public_key const *in) {
+static bool validate(public_key const *in) {
   const proj A = {in->A, fp_1};
 
   do {
@@ -149,7 +154,7 @@ static void montgomery_rhs(fp *rhs, fp const *A, fp const *x) {
 }
 
 /* generates a curve point with suitable field of definition for y-coordinate */
-void elligator(fp *x, const fp *A, bool sign, uint8_t index) {
+static void elligator(fp *x, const fp *A, bool sign, uint8_t index) {
 
   fp legendre_symbol;
   // v = A/(u^2 − 1)
@@ -167,6 +172,9 @@ void elligator(fp *x, const fp *A, bool sign, uint8_t index) {
 }
 
 /* constant-time. */
+#ifndef CSIDH_BENCH
+static
+#endif
 void action(public_key *out, public_key const *in, private_key const *priv,
             uint8_t num_batches, int8_t const *max_exponent,
             unsigned int const num_isogenies, uint8_t const my) {

@@ -9,7 +9,7 @@
 #define num_primes 74
 fp invs_[9];
 
-const unsigned primes[num_primes];
+//const unsigned primes[num_primes];
 
 void csidh_init();
 
@@ -24,17 +24,14 @@ typedef struct public_key {
 extern const public_key base;
 
 void csidh_private(private_key *priv, const int8_t *max_exponent);
+#ifdef CSIDH_BENCH
 void action(public_key *out, public_key const *in, private_key const *priv,
             uint8_t num_intervals, int8_t const *max_exponent,
             unsigned int const num_isogenies, uint8_t const my);
+#endif
 bool csidh(public_key *out, public_key const *in, private_key const *priv,
            uint8_t const num_intervals, int8_t const *max_exponent,
            unsigned int const num_isogenies, uint8_t const my);
-void elligator(fp *x, const fp *A, bool sign, uint8_t index);
-bool validate(public_key const *in);
-
-uint32_t lookup(size_t pos, int8_t const *priv);
-uint32_t isequal(uint32_t a, uint32_t b);
-void cmov(int8_t *r, const int8_t *a, uint32_t b);
+//void elligator(fp *x, const fp *A, bool sign, uint8_t index);
 
 #endif
