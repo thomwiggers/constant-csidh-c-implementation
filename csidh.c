@@ -4,6 +4,8 @@
 #include "csidh.h"
 #include "rng.h"
 
+fp invs_[9];
+
 static uint32_t lookup(size_t pos, int8_t const *priv);
 static uint32_t isequal(uint32_t a, uint32_t b);
 static void cmov(int8_t *r, const int8_t *a, uint32_t b);

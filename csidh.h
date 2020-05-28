@@ -7,7 +7,7 @@
 
 /* specific to p, should perhaps be somewhere else */
 #define num_primes 74
-fp invs_[9];
+extern fp invs_[9];
 
 //const unsigned primes[num_primes];
 
